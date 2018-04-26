@@ -23,4 +23,5 @@ Issue the build command:
 To start and stop the containers:
 
 ` docker-compose up -d`
+
 ` docker-compose stop`
