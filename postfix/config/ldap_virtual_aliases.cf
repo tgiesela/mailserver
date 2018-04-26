@@ -1,0 +1,10 @@
+bind = yes
+bind_dn = cn=postfix,ou=services,<addomain>
+bind_pw = <secret>
+server_host = ldap://<domaincontroller>:389
+#search_base = ou=people,<addomain>
+search_base = cn=Users,<addomain>
+domain = <domain>
+query_filter = (&(mailAlias=%s))
+result_attribute = mail, email
+

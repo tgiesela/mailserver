@@ -1,0 +1,73 @@
+version: '2'
+services:
+   postfix:
+      build: ./postfix
+      container_name: mailserver-postfix
+      image: tgiesela/postfix:v0.2
+      hostname: postfix
+      domainname: thuis.local
+      ports: 
+         - "25:25"     # smtp
+         - "587:587"   # smtp-auth
+      expose:
+         - "10025"     # smtp-for-amavis
+      environment:
+         - DOMAIN=thuis.local
+         - ADDOMAIN=dc=thuis,dc=local
+         - DOCKERNETMASK=172.18.0.0
+         - DOCKERNETMASKLEN=24
+         - NETMASK=10.56.57.0
+         - NETMASKLEN=24
+         - HOSTNAME=thuisdc
+         - ADPASSWORD=<password for postfix to access AD>
+         - LOCALNETWORK="172.18.0.0/24"
+         - OTHERNERWORK="10.56.57.0/24"
+         - RELAYHOST="smtp.gmail.com" 
+         - RELAYUSER="<youremail@gmail.com>" 
+         - RELAYUSERPASSWORD="password for relayuser" 
+
+   dovecot:
+      build: ./dovecot
+      container_name: mailserver-dovecot
+      image: tgiesela/dovecot:v0.2
+      hostname: dovecot
+      domainname: thuis.local
+      ports:
+        - "143:143"     # imap
+        - "993:993"     # imap-secure
+        - "110:110"     # pop3
+        - "995:995"     # pop3-secure
+      expose:
+        - "24"          # lmtp
+        - "12345"       # sasl
+      environment:
+         - DOMAIN="thuis.local"
+         - ADDOMAIN="dc=thuis,dc=local"
+         - ADPASSWORD=<password for postfix to access AD>
+         - DOCKERNETMASK="172.18.0.0"
+         - DOCKERNETMASKLEN="24"
+         - NETMASK="10.56.57.0"
+         - NETMASKLEN="24"
+         - HOSTNAME="thuisdc" 
+         - CERTIFICATESUBJECT="/C=<Country>/ST=<state>/L=<City>/O=<name>/CN=<canonical name"
+      volumes:
+        - /mnt/mail/:/var/mail/
+
+   fetchmail:
+      build: ./fetchmail
+      container_name: mailserver-fetchmail
+      image: tgiesela/fetchmail:v0.2
+      hostname: fetchmail
+      domainname: thuis.local
+
+networks:
+    default:
+        external:
+            name: tginet
+
+#volumes:
+#    maildata:/mnt/media
+
+#volumes:
+#  maildata:/dockerdata/mail
+#    driver: local
