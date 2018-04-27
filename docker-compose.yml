@@ -20,11 +20,12 @@ services:
          - NETMASKLEN=24
          - HOSTNAME=thuisdc
          - ADPASSWORD=<password for postfix to access AD>
-         - LOCALNETWORK="172.18.0.0/24"
-         - OTHERNERWORK="10.56.57.0/24"
-         - RELAYHOST="smtp.gmail.com" 
-         - RELAYUSER="<youremail@gmail.com>" 
+         - LOCALNETWORK=172.18.0.0/24
+         - OTHERNERWORK=10.56.57.0/24
+         - RELAYHOST=smtp.gmail.com 
+         - RELAYUSER=<youremail@gmail.com> 
          - RELAYUSERPASSWORD="password for relayuser" 
+         - CERTIFICATESUBJECT=/C=<Country>/ST=<state>/L=<City>/O=<name>/CN=<canonical name
 
    dovecot:
       build: ./dovecot
@@ -41,15 +42,15 @@ services:
         - "24"          # lmtp
         - "12345"       # sasl
       environment:
-         - DOMAIN="thuis.local"
-         - ADDOMAIN="dc=thuis,dc=local"
+         - DOMAIN=thuis.local
+         - ADDOMAIN=dc=thuis,dc=local
          - ADPASSWORD=<password for postfix to access AD>
-         - DOCKERNETMASK="172.18.0.0"
-         - DOCKERNETMASKLEN="24"
-         - NETMASK="10.56.57.0"
-         - NETMASKLEN="24"
-         - HOSTNAME="thuisdc" 
-         - CERTIFICATESUBJECT="/C=<Country>/ST=<state>/L=<City>/O=<name>/CN=<canonical name"
+         - DOCKERNETMASK=172.18.0.0
+         - DOCKERNETMASKLEN=24
+         - NETMASK=10.56.57.0
+         - NETMASKLEN=24
+         - HOSTNAME=thuisdc 
+         - CERTIFICATESUBJECT=/C=<Country>/ST=<state>/L=<City>/O=<name>/CN=<canonical name
       volumes:
         - /mnt/mail/:/var/mail/
 
