@@ -1,12 +1,17 @@
 #!/bin/bash
 
 set -e
+CERTFOLDER=/etc/ssl/dovecot
+CACERT=${CERTFOLDER}/ssl-cert-snakeoil.pem
+PRIVATEKEY=${CERTFOLDER}/mail.key
+PUBLICCERT=${CERTFOLDER}/mailcert.pem
 
 info () {
     echo "[INFO] $@"
 }
 
 generateCertificate() {
+    mkdir -p ${CERTFOLDER}
     openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
         -subj "${CERTIFICATESUBJECT}" \
 	-keyout ${PRIVATEKEY} -out ${PUBLICCERT}
