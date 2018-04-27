@@ -9,7 +9,7 @@ RUN apt-get install -y supervisor \
         net-tools nano apt-utils wget rsyslog
 
 # install postfix
-RUN apt-get install -y postfix sasl2-bin postfix-pcre postfix-ldap
+RUN apt-get install -y postfix sasl2-bin postfix-pcre postfix-ldap libsasl2-modules
 # for testing only
 RUN apt-get install -y telnet
 
