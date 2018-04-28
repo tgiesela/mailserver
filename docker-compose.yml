@@ -58,7 +58,7 @@ services:
       build: ./fetchmail
       container_name: mailserver-fetchmail
       image: tgiesela/fetchmail:v0.2
-      hostname: postfix
+      hostname: fetchmail
       domainname: thuis.local
 
 networks:
