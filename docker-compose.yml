@@ -12,6 +12,7 @@ services:
       expose:
          - "10025"     # smtp-for-amavis
       environment:
+         - TZ=Europe/Amsterdam
          - DOMAIN=thuis.local
          - ADDOMAIN=dc=thuis,dc=local
          - DOCKERNETMASK=171.18.0.0
@@ -42,6 +43,7 @@ services:
         - "24"          # lmtp
         - "12345"       # sasl
       environment:
+         - TZ=Europe/Amsterdam
          - DOMAIN=thuis.local
          - ADDOMAIN=dc=thuis,dc=local
          - ADPASSWORD=<password for postfix to access AD>
@@ -60,6 +62,8 @@ services:
       image: tgiesela/fetchmail:v0.2
       hostname: fetchmail
       domainname: thuis.local
+      environment:
+         - TZ=Europe/Amsterdam
 
 networks:
     default:
