@@ -28,6 +28,7 @@ services:
          - RELAYUSER=<youremail@gmail.com> 
          - RELAYUSERPASSWORD="password for relayuser" 
          - CERTIFICATESUBJECT=/C=<Country>/ST=<state>/L=<City>/O=<name>/CN=<canonical name
+      restart: always
 
    dovecot:
       build: ./dovecot
@@ -59,6 +60,9 @@ services:
          - CERTIFICATESUBJECT=/C=<Country>/ST=<state>/L=<City>/O=<name>/CN=<canonical name
       volumes:
         - /mnt/mail/:/var/mail/
+      depends_on:
+        - "postfix"
+      restart: always
 
    fetchmail:
       build: ./fetchmail
@@ -66,11 +70,11 @@ services:
       image: tgiesela/fetchmail:v0.2
       hostname: fetchmail
       domainname: thuis.local
+      environment:
+         - TZ=Europe/Amsterdam
       restart: always
       depends_on:
         - "postfix"
-      environment:
-         - TZ=Europe/Amsterdam
 
 networks:
     default:
