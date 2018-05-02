@@ -2,25 +2,27 @@ version: '2'
 services:
    postfix:
       build: ./postfix
-      container_name: mailserver-postfix
+      container_name: postfix
       image: tgiesela/postfix:v0.2
       hostname: postfix
       domainname: thuis.local
+      restart: always
       ports: 
          - "25:25"     # smtp
          - "587:587"   # smtp-auth
       expose:
          - "10025"     # smtp-for-amavis
       environment:
+         - TZ=Europe/Amsterdam
          - DOMAIN=thuis.local
          - ADDOMAIN=dc=thuis,dc=local
-         - DOCKERNETMASK=172.18.0.0
+         - DOCKERNETMASK=171.18.0.0
          - DOCKERNETMASKLEN=24
          - NETMASK=10.56.57.0
          - NETMASKLEN=24
          - HOSTNAME=thuisdc
          - ADPASSWORD=<password for postfix to access AD>
-         - LOCALNETWORK=172.18.0.0/24
+         - LOCALNETWORK=171.18.0.0/24
          - OTHERNERWORK=10.56.57.0/24
          - RELAYHOST=smtp.gmail.com 
          - RELAYUSER=<youremail@gmail.com> 
@@ -29,10 +31,13 @@ services:
 
    dovecot:
       build: ./dovecot
-      container_name: mailserver-dovecot
+      container_name: dovecot
       image: tgiesela/dovecot:v0.2
       hostname: dovecot
       domainname: thuis.local
+      restart: always
+      depends_on:
+        - "postfix"
       ports:
         - "143:143"     # imap
         - "993:993"     # imap-secure
@@ -42,10 +47,11 @@ services:
         - "24"          # lmtp
         - "12345"       # sasl
       environment:
+         - TZ=Europe/Amsterdam
          - DOMAIN=thuis.local
          - ADDOMAIN=dc=thuis,dc=local
          - ADPASSWORD=<password for postfix to access AD>
-         - DOCKERNETMASK=172.18.0.0
+         - DOCKERNETMASK=171.18.0.0
          - DOCKERNETMASKLEN=24
          - NETMASK=10.56.57.0
          - NETMASKLEN=24
@@ -56,10 +62,15 @@ services:
 
    fetchmail:
       build: ./fetchmail
-      container_name: mailserver-fetchmail
+      container_name: fetchmail
       image: tgiesela/fetchmail:v0.2
-      hostname: postfix
+      hostname: fetchmail
       domainname: thuis.local
+      restart: always
+      depends_on:
+        - "postfix"
+      environment:
+         - TZ=Europe/Amsterdam
 
 networks:
     default:

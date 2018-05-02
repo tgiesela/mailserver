@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM resin/rpi-raspbian:latest
 MAINTAINER Tonny Gieselaar <tonny@devosverzuimbeheer.nl>
 
 ENV DEBIAN_FRONTEND noninteractive
