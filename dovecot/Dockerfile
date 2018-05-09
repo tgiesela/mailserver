@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND noninteractive
 # install supervisord and some additional tools
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y supervisor \
-        net-tools nano apt-utils wget rsyslog
+        net-tools nano apt-utils wget rsyslog logrotate
 
 # install dovecot
 RUN apt-get install -y dovecot-imapd dovecot-pop3d dovecot-ldap dovecot-lmtpd 

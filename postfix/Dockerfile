@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND noninteractive
 # install supervisord and some additional tools
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y supervisor \
-        net-tools nano apt-utils wget rsyslog
+        net-tools nano apt-utils wget rsyslog logrotate
 
 # install postfix
 RUN apt-get install -y postfix sasl2-bin postfix-pcre postfix-ldap libsasl2-modules
@@ -20,10 +20,6 @@ ADD config/ldap_virtual_aliases.cf /etc/postfix/
 ADD config/identitycheck.pcre /etc/postfix/
 ADD config/virtual_domains /etc/postfix/
 ADD config/drop.cidr /etc/postfix/
-
-# SASL configuration
-#ADD config/smtpd.conf /etc/postfix/sasl/
-#ADD config/saslauthd.conf /etc/
 
 # Container scripts
 ADD scripts/init.sh /init.sh

@@ -47,11 +47,17 @@ appSetup () {
 
     touch /etc/dovecot/.alreadysetup
 
+    sed -i "s@#mail_max_userip_connections = 10@mail_max_userip_connections = 30@" /etc/dovecot/conf.d/20-imap.conf
+
+    # Remove last lines from /etc/rsyslogd.conf to avoid errors in '/var/log/messages' such as
+    # "rsyslogd-2007: action 'action 17' suspended, next retry is"
+    sed -i '/# The named pipe \/dev\/xconsole/,$d' /etc/rsyslog.conf
 }
 
 appStart () {
     [ -f /etc/dovecot/.alreadysetup ] && echo "Skipping setup..." || appSetup
 
+    service cron start
     # Start the services
     /usr/bin/supervisord
 }

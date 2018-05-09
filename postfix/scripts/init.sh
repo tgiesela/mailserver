@@ -6,6 +6,8 @@ CERTFOLDER=/etc/postfix/certs
 CACERT=${CERTFOLDER}/ssl-cert-snakeoil.pem
 PRIVATEKEY=${CERTFOLDER}/mail.key
 PUBLICCERT=${CERTFOLDER}/mailcert.pem
+#PRIVATEKEY=/certificates/privkey.pem
+#PUBLICCERT=/certificates/fullchain.pem
 
 info () {
     echo "[INFO] $@"
@@ -73,11 +75,27 @@ appSetup () {
 
     touch /etc/postfix/.alreadysetup
 
+    # Remove last lines from /etc/rsyslogd.conf to avoid errors in '/var/log/messages' such as
+    # "rsyslogd-2007: action 'action 17' suspended, next retry is"
+    sed -i '/# The named pipe \/dev\/xconsole/,$d' /etc/rsyslog.conf
+
+
+    # Generate new certificate 
+    cd /home/letsencrypt/
+    ./letsencrypt-auto \ 
+	certonly --standalone \
+	-w /home \
+	-d ${WEBURL} \
+	--preferred-challenges http \
+	-m ${EMAIL} \
+	--agree-tos -n
+
 }
 
 appStart () {
     [ -f /etc/postfix/.alreadysetup ] && echo "Skipping setup..." || appSetup
 
+    service cron start
     # Start the services
     /usr/bin/supervisord
 }
