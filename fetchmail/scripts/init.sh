@@ -23,6 +23,7 @@ appSetup () {
 appStart () {
     [ -f /etc/postfix/.alreadysetup ] && echo "Skipping setup..." || appSetup
 
+    service cron start
     # Start the services
     /usr/bin/supervisord
 }
