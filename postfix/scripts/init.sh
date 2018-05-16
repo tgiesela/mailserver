@@ -75,6 +75,9 @@ appSetup () {
 
     touch /etc/postfix/.alreadysetup
 
+    # To make logrotate work (rsyslogd has to reopen logs
+    mv /usr/sbin/policy-rc.d /usr/sbin/policy-rc.d.saved
+
     # Remove last lines from /etc/rsyslogd.conf to avoid errors in '/var/log/messages' such as
     # "rsyslogd-2007: action 'action 17' suspended, next retry is"
     sed -i '/# The named pipe \/dev\/xconsole/,$d' /etc/rsyslog.conf

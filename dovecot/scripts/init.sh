@@ -47,6 +47,8 @@ appSetup () {
 
     touch /etc/dovecot/.alreadysetup
 
+    # To make logrotate work (rsyslogd has to reopen logs
+    mv /usr/sbin/policy-rc.d /usr/sbin/policy-rc.d.saved
     sed -i "s@#mail_max_userip_connections = 10@mail_max_userip_connections = 30@" /etc/dovecot/conf.d/20-imap.conf
 
     # Remove last lines from /etc/rsyslogd.conf to avoid errors in '/var/log/messages' such as
