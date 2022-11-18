@@ -1,0 +1,26 @@
+version: '2'
+services:
+   fetchmail:
+      build: .
+      container_name: fetchmail
+      image: tgiesela/fetchmail:v0.2
+      hostname: fetchmail
+      domainname: thuis.local
+      restart: always
+#      depends_on:
+#        - "postfix"
+      logging:
+         driver: syslog
+      environment:
+         - TZ=Europe/Amsterdam
+
+networks:
+    default:
+            name: tginet
+
+#volumes:
+#    maildata:/mnt/media
+
+#volumes:
+#  maildata:/dockerdata/mail
+#    driver: local

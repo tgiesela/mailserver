@@ -1,20 +1,22 @@
-FROM resin/rpi-raspbian:latest
+FROM debian:latest
 MAINTAINER Tonny Gieselaar <tonny@devosverzuimbeheer.nl>
 
 ENV DEBIAN_FRONTEND noninteractive
 
-# install supervisord and some additional tools
+# install some additional tools
 RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y supervisor \
-        net-tools nano apt-utils wget rsyslog logrotate
+RUN apt-get install -y \
+        net-tools nano apt-utils wget 
 
 # install fetchmail
 RUN apt-get install -y fetchmail
 # for testing only
-RUN apt-get install -y telnet
+RUN apt-get install -y procps
 
-ADD config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# use git secret to reveal the contents of fetchmailrc and .netrc
+# or create the files manually before you build
 ADD config/fetchmailrc /etc/
+ADD config/.netrc ~/
 # Container scripts
 ADD scripts/init.sh /init.sh
 RUN chmod 755 /init.sh
