@@ -25,3 +25,8 @@ To start and stop the containers:
 ` docker-compose up -d`
 
 ` docker-compose stop`
+
+For fetchmail you need to create a fetchmailrc and .netrc file. See the examples.
+If you have access to git secret with a known email-address you can use `git secret reveal` to
+get the stored files.
+ 
