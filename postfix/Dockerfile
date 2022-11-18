@@ -1,4 +1,5 @@
-FROM resin/rpi-raspbian:latest
+#FROM resin/rpi-raspbian:latest
+FROM debian:latest
 MAINTAINER Tonny Gieselaar <tonny@devosverzuimbeheer.nl>
 
 ENV DEBIAN_FRONTEND noninteractive

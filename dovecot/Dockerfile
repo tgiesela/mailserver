@@ -1,4 +1,5 @@
-FROM resin/rpi-raspbian:latest
+#FROM resin/rpi-raspbian:latest
+FROM debian:latest
 MAINTAINER Tonny Gieselaar <tonny@devosverzuimbeheer.nl>
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -15,6 +16,7 @@ RUN cp -R /etc/dovecot/conf.d/ /etc/dovecot/conf.d.saved/
 ADD config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 ADD config/conf.d/ /etc/dovecot/conf.d/
 RUN mv /etc/dovecot/conf.d/dovecot-ldap.conf.ext /etc/dovecot/
+RUN apt-get install -y procps
 ADD scripts/init.sh /init.sh
 RUN chmod 755 /init.sh
 

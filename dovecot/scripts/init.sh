@@ -12,10 +12,7 @@ info () {
 
 generateCertificate() {
     mkdir -p ${CERTFOLDER}
-    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
-        -subj "${CERTIFICATESUBJECT}" \
-	-keyout ${PRIVATEKEY} -out ${PUBLICCERT}
-    
+    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -subj "${CERTIFICATESUBJECT}" -keyout ${PRIVATEKEY} -out ${PUBLICCERT}
 }
 updatefile() {
     sed -i "s/<domain>/$DOMAIN/g" $@
