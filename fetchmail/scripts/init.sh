@@ -9,26 +9,13 @@ info () {
 appSetup () {
     echo "[INFO] setup"
 
-    chmod 700 /etc/fetchmailrc
-    touch /var/log/fetchmail.log
-
-#    touch /etc/fetchmail/.alreadysetup
-
-    # To make logrotate work (rsyslogd has to reopen logs
-#    mv /usr/sbin/policy-rc.d /usr/sbin/policy-rc.d.saved
-
-    # Remove last lines from /etc/rsyslogd.conf to avoid errors in '/var/log/messages' such as
-    # "rsyslogd-2007: action 'action 17' suspended, next retry is"
-#    sed -i '/# The named pipe \/dev\/xconsole/,$d' /etc/rsyslog.conf
+    chmod 0700 /etc/fetchmailrc
+    chmod 0700 ~/.netrc
 
 }
 
 appStart () {
-    [ -f /etc/postfix/.alreadysetup ] && echo "Skipping setup..." || appSetup
-
-#    service cron start
-    # Start the services
-#    /usr/bin/supervisord
+     appSetup
      /usr/bin/fetchmail -v -N -f /etc/fetchmailrc
 }
 

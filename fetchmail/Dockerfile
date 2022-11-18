@@ -16,7 +16,7 @@ RUN apt-get install -y procps
 # use git secret to reveal the contents of fetchmailrc and .netrc
 # or create the files manually before you build
 ADD config/fetchmailrc /etc/
-ADD config/.netrc ~/
+ADD config/.netrc /root/
 # Container scripts
 ADD scripts/init.sh /init.sh
 RUN chmod 755 /init.sh
