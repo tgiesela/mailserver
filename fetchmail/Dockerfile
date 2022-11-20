@@ -21,6 +21,7 @@ ADD config/.netrc /root/
 ADD scripts/init.sh /init.sh
 RUN chmod 755 /init.sh
 
+RUN apt-get reinstall -y netbase
 RUN apt-get clean
 
 ENTRYPOINT ["/init.sh"]

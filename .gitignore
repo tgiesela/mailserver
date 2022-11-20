@@ -1,3 +1,4 @@
 .gitsecret/keys/random_seed
 fetchmail/config/.netrc
 fetchmail/config/fetchmailrc
+docker-compose.yml
