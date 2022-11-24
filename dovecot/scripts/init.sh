@@ -31,12 +31,10 @@ appSetup () {
     echo "[INFO] setup"
 
 # TLS Settings
-    generateCertificate
+#    generateCertificate
 
     addgroup --system --gid 5000 vmail
     adduser --system --home /srv/vmail --uid 5000 --gid 5000 --disabled-password --disabled-login vmail
-#    chgrp vmail /var/mail
-#    chmod 777 /var/mail
 
     ln -s /etc/dovecot/dovecot-ldap.conf.ext /etc/dovecot/dovecot-ldap-userdb.conf.ext
 
@@ -44,21 +42,14 @@ appSetup () {
 
     touch /etc/dovecot/.alreadysetup
 
-    # To make logrotate work (rsyslogd has to reopen logs
-    mv /usr/sbin/policy-rc.d /usr/sbin/policy-rc.d.saved
     sed -i "s@#mail_max_userip_connections = 10@mail_max_userip_connections = 30@" /etc/dovecot/conf.d/20-imap.conf
 
-    # Remove last lines from /etc/rsyslogd.conf to avoid errors in '/var/log/messages' such as
-    # "rsyslogd-2007: action 'action 17' suspended, next retry is"
-    sed -i '/# The named pipe \/dev\/xconsole/,$d' /etc/rsyslog.conf
 }
 
 appStart () {
     [ -f /etc/dovecot/.alreadysetup ] && echo "Skipping setup..." || appSetup
 
-    service cron start
-    # Start the services
-    /usr/bin/supervisord
+    /usr/sbin/dovecot -F
 }
 
 appHelp () {

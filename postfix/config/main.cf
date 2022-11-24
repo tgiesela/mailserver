@@ -1,191 +1,68 @@
-###################################################################################################
-### Base Settings ###
-#####################
+# See /usr/share/postfix/main.cf.dist for a commented, more complete version
 
-# Listen on all interfaces
-inet_interfaces = all
 
-# Use TCP IPv4
-inet_protocols = ipv4
+# Debian specific:  Specifying a file name will cause the first
+# line of that file to be used as the name.  The Debian default
+# is /etc/mailname.
+#myorigin = /etc/mailname
 
-# Greet connecting clients with this banner
-smtpd_banner = $myhostname ESMTP $mail_name (Ubuntu)
+smtpd_banner = $myhostname ESMTP $mail_name (Debian/GNU)
+biff = no
 
-# Fully-qualified hostname
-myhostname = <hostname>.<domain>
-
-# Do not append domain part to incomplete addresses (this is the MUA's job)
-
+# appending .domain is the MUA's job.
 append_dot_mydomain = no
 
-# Trusted networks/hosts (these are allowed to relay without authentication)
-mynetworks =
-    # Local
-    127.0.0.0/8
-    # External
-    <dockernetmask>
-    <netmask>
+# Uncomment the next line to generate "delayed mail" warnings
+#delay_warning_time = 4h
+
+readme_directory = no
+
+# See http://www.postfix.org/COMPATIBILITY_README.html -- default to 2 on
+# fresh installs.
+compatibility_level = 2
 
 
-###################################################################################################
-### Local Transport ###
-#######################
 
-# Disable local transport (so that system accounts can't receive mail)
-local_transport = error:Local Transport Disabled
+# TLS parameters
+smtpd_tls_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+smtpd_tls_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
+smtpd_tls_security_level=may
 
-# Don't use local alias maps
-alias_maps = 
+smtp_tls_CApath=/etc/ssl/certs
+smtp_tls_security_level=may
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
 
-# Local domain (could be omitted, since it is automatically derived from $myhostname)
-mydomain = <domain>
 
-# Mails for these domains will be transported locally
+smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination
+myhostname = <hostname>.<domain>
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+
+## Mails for these domains will be transported locally
 mydestination =
     $myhostname
     localhost.$mydomain
     localhost
+    $mydomain
 
+relayhost = 
+mynetworks = 127.0.0.0/8 <dockernetmask> <netmask> [::ffff:127.0.0.0]/104 [::1]/128
+mailbox_size_limit = 0
+recipient_delimiter = +
+inet_interfaces = all
+inet_protocols = all
 
-###################################################################################################
-### Virtual Transport ###
-#########################
-
-# Deliver mail for virtual recipients to Dovecot
-virtual_transport = lmtp:inet:dovecot
-
-# Valid virtual domains
-virtual_mailbox_domains = hash:/etc/postfix/virtual_domains
-
-# Valid virtual recipients
-virtual_mailbox_maps = proxy:ldap:/etc/postfix/ldap_virtual_recipients.cf
-
-# Virtual aliases
-virtual_alias_maps = proxy:ldap:/etc/postfix/ldap_virtual_aliases.cf
-
-
-###################################################################################################
-### Remote Transport ###
-########################
-
-mailbox_transport=lmtp:inet:dovecot
-
-###################################################################################################
-### ESMTP Settings ###
-######################
-
-### SASL ###
-
-# Enable SASL (required for SMTP authentication)
-smtpd_sasl_auth_enable = yes
-smtpd_sasl_security_options = noanonymous
-smtpd_sasl_path = inet:dovecot:12345
+# SASL Authentication
 smtpd_sasl_type = dovecot
-smtpd_sasl_local_domain = $myhostname
+smtpd_sasl_path = inet:dovecot:12345
+smtpd_sasl_auth_enable = yes
 
-# Enable SASL for Outlook-Clients as well
-broken_sasl_auth_clients = yes
+mua_client_restrictions = permit_sasl_authenticated, reject
+mua_sender_restrictions = permit_sasl_authenticated, reject
+mua_helo_restrictions = permit_mynetworks, reject_non_fqdn_hostname, reject_invalid_hostname, permit
 
-### TLS ###
+# Transport
+mydomain = <emaildomain>
 
-# Enable TLS (required to encrypt the plaintext SASL authentication)
-smtpd_tls_security_level = may
-
-# Only offer SASL in a TLS session
-smtpd_tls_auth_only = yes
-
-# Certification Authority
-smtpd_tls_CAfile = <cacert>
-smtpd_tls_cert_file = <publiccert>
-smtpd_tls_key_file = <privatekey>
-smtp_tls_CApath = /etc/ssl/certs/
-smtp_tls_security_level=encrypt
-
-# Randomizer for key creation
-tls_random_source = dev:/dev/urandom
-
-# TLS related logging (set to 2 for debugging)
-smtpd_tls_loglevel = 0
-
-# Avoid Denial-Of-Service-Attacks
-smtpd_client_new_tls_session_rate_limit = 10
-
-# Activate TLS Session Cache
-smtpd_tls_session_cache_database = btree:/etc/postfix/smtpd_session_cache
-
-# Deny some TLS-Ciphers
-smtpd_tls_exclude_ciphers =
-        EXP
-        EDH-RSA-DES-CBC-SHA
-        ADH-DES-CBC-SHA
-        DES-CBC-SHA
-        SEED-SHA
-
-# Diffie-Hellman Parameters for Perfect Forward Secrecy
-# Can be created with:
-# openssl dhparam -2 -out dh_512.pem 512
-# openssl dhparam -2 -out dh_1024.pem 1024
-smtpd_tls_dh512_param_file = ${config_directory}/certs/dh_512.pem
-smtpd_tls_dh1024_param_file = ${config_directory}/certs/dh_1024.pem
-
-
-###################################################################################################
-### Connection Policies ###
-###########################
-
-# Reject Early Talkers
-postscreen_greet_action = enforce
-
-
-###################################################################################################
-### Session Policies ###
-########################
-
-# Recipient Restrictions (RCPT TO related)
-smtpd_recipient_restrictions =
-        reject_non_fqdn_recipient
-        reject_unknown_recipient_domain
-        # Allow relaying for SASL authenticated clients and trusted hosts/networks
-        # This can be put to smtpd_relay_restrictions in Postfix 2.10 and later 
-        permit_sasl_authenticated
-        permit_mynetworks
-        # If not authenticated or on mynetworks, reject mailing to external addresses
-        reject_unauth_destination
-        # Reject the following hosts
-        check_sender_ns_access cidr:/etc/postfix/drop.cidr
-        check_sender_mx_access cidr:/etc/postfix/drop.cidr
-        # Additional blacklist
-        reject_rbl_client ix.dnsbl.manitu.net
-        # Finally permit (relaying still requires SASL auth)
-        # WARNING: Due to this permit, everyone will be able to send emails to internal addresses without authentication. If this is set to reject though, the server does not receive emails from external addresses. Unfortunately I do not have a solution for this.
-        permit
-
-# Reject the request if the sender is the null address and there are multiple recipients
-smtpd_data_restrictions = reject_multi_recipient_bounce
-
-# Sender Restrictions
-smtpd_sender_restrictions =
-        reject_non_fqdn_sender
-        reject_unknown_sender_domain
-
-# HELO/EHLO Restrictions
-smtpd_helo_restrictions =
-	permit_mynetworks
-        check_helo_access pcre:/etc/postfix/identitycheck.pcre
-        #reject_non_fqdn_helo_hostname
-        reject_invalid_hostname
-
-# Deny VRFY recipient checks
-disable_vrfy_command = yes
-
-# Require HELO
-smtpd_helo_required = yes
-
-# Reject instantly if a restriction applies (do not wait until RCPT TO)
-smtpd_delay_reject = no
-
-# Client Restrictions (IP Blacklist)
-smtpd_client_restrictions = check_client_access cidr:/etc/postfix/drop.cidr
-
-message_size_limit=20480000
-
+# Logging
+maillog_file=/dev/stdout
