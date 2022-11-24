@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+#set -e
 
 CERTFOLDER=/etc/postfix/certs
 CACERT=${CERTFOLDER}/ssl-cert-snakeoil.pem
@@ -22,12 +22,13 @@ generateCertificate() {
     openssl dhparam -2 -out ${CERTFOLDER}/dh_512.pem 512
     openssl dhparam -2 -out ${CERTFOLDER}/dh_1024.pem 1024    
 
-    chown -R root:root /etc/postfix/certs/
-    chmod -R 600 /etc/postfix/certs/
+    chown -R root:root ${CERTFOLDER}
+    chmod -R 600 ${CERTFOLDER}
 }
 
 updatefile() {
     sed -i "s/<domain>/$DOMAIN/g" $@
+    sed -i "s/<emaildomain>/$EMAILDOMAIN/g" $@
     sed -i "s/<addomain>/$ADDOMAIN/g" $@
     sed -i "s/<hostname>/$HOSTNAME/g" $@
     sed -i "s/<dockernetmask>/$DOCKERNETMASK\/$DOCKERNETMASKLEN/g" $@
@@ -42,30 +43,56 @@ updatefile() {
 appSetup () {
     echo "[INFO] setup"
 
-    chmod +x /postfix.sh
+    mkdir -p ${CERTFOLDER}
 
-    mkdir ${CERTFOLDER}
-    generateCertificate
+# copy files to chroot environment otherwise dns-resolve does not work
+    cp /etc/services /var/spool/postfix/etc/
+    cp /etc/resolv.conf /var/spool/postfix/etc/
 
     cd /etc/postfix/
+
 
     updatefile main.cf
     updatefile ldap_virtual_aliases.cf
     updatefile ldap_virtual_recipients.cf
     updatefile virtual_domains
-    updatefile drop.cidr
 
 #   configure relay
 
+    postconf -e maillog_file=/dev/stdout
     postconf -e relayhost=[${RELAYHOST}]:587
+    echo [${RELAYHOST}]:587 ${RELAYUSER}:${RELAYUSERPASSWORD} >> /etc/postfix/sasl_passwd
+    sed -i "s/\"//g" /etc/postfix/sasl_passwd
+    postmap /etc/postfix/sasl_passwd
+
+#   configure sasl authentication
+
     postconf -e smtp_sasl_auth_enable=yes
     postconf -e smtp_sasl_password_maps=hash:/etc/postfix/sasl_passwd
     postconf -e smtp_sasl_security_options=noanonymous
     postconf -e smtpd_tls_security_level=may
+    postconf -e virtual_transport=lmtp:inet:dovecot
+    postconf -e virtual_mailbox_domains=hash:/etc/postfix/virtual_domains
+    postconf -e virtual_mailbox_maps=proxy:ldap:/etc/postfix/ldap_virtual_recipients.cf
+    postconf -e virtual_alias_maps=proxy:ldap:/etc/postfix/ldap_virtual_aliases.cf
 
-    echo [${RELAYHOST}]:587 ${RELAYUSER}:${RELAYUSERPASSWORD} >> /etc/postfix/sasl_passwd
-    sed -i "s/\"//g" /etc/postfix/sasl_passwd
-    postmap /etc/postfix/sasl_passwd
+#   configure certificates (Letsencrypt) or generate self-signed cert
+
+    ls -als  /certificates/fullchain.pem
+    if [ -f /certificates/fullchain.pem ]; then
+        echo "Letsencrypt certificates present"
+	postconf -e smtpd_tls_cert_file=/certificates/fullchain.pem
+        postconf -e smtpd_tls_key_file=/certificates/privkey.pem
+    else
+        echo "Letsencrypt certificates MISSING, generate self-signed certs"
+        generateCertificate
+    fi
+
+#   miscelaneous
+
+    postconf -e mydestination=$myhostname,localhost,localhost.$mydomain
+    postconf -e message_size_limit=20480000
+    postconf -e disable_vrfy_command=yes
 
 #    sed -i "s/START=no/START=yes/g" /etc/default/saslauthd
 #    sed -i "s/MECHANISMS=.*/MECHANISMS=\"ldap\"/g" /etc/default/saslauthd
@@ -75,32 +102,12 @@ appSetup () {
 
     touch /etc/postfix/.alreadysetup
 
-    # To make logrotate work (rsyslogd has to reopen logs
-    mv /usr/sbin/policy-rc.d /usr/sbin/policy-rc.d.saved
-
-    # Remove last lines from /etc/rsyslogd.conf to avoid errors in '/var/log/messages' such as
-    # "rsyslogd-2007: action 'action 17' suspended, next retry is"
-    sed -i '/# The named pipe \/dev\/xconsole/,$d' /etc/rsyslog.conf
-
-
-    # Generate new certificate 
-    cd /home/letsencrypt/
-    ./letsencrypt-auto \ 
-	certonly --standalone \
-	-w /home \
-	-d ${WEBURL} \
-	--preferred-challenges http \
-	-m ${EMAIL} \
-	--agree-tos -n
-
 }
 
 appStart () {
     [ -f /etc/postfix/.alreadysetup ] && echo "Skipping setup..." || appSetup
 
-    service cron start
-    # Start the services
-    /usr/bin/supervisord
+    /usr/sbin/postfix start-fg
 }
 
 appHelp () {
