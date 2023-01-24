@@ -19,7 +19,7 @@ services:
          - TZ=Europe/Amsterdam
          - DOMAIN=thuis.local
          - ADDOMAIN=dc=thuis,dc=local
-         - EMAILDOMAIN=gieselaar.ddns.net
+         - EMAILDOMAIN=<yourdomain>
          - DOCKERNETMASK=171.18.0.0
          - DOCKERNETMASKLEN=24
          - NETMASK=10.56.57.0
