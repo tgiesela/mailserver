@@ -3,19 +3,23 @@ services:
    postfix:
       build: ./postfix
       container_name: postfix
-      image: tgiesela/postfix:v0.2
+      image: tgiesela/postfix:v0.3
       hostname: postfix
       domainname: thuis.local
       restart: always
+      networks:
+         - mailnet
       ports: 
-         - "25:25"     # smtp
-         - "587:587"   # smtp-auth
+         - "25:25"   # smtp
+         - "587:587" # smtp-auth starttls
+         - "465:465" # smtp-auth tls
       expose:
-         - "10025"     # smtp-for-amavis
+         - "10025"   # smtp-for-amavis
       environment:
          - TZ=Europe/Amsterdam
          - DOMAIN=thuis.local
          - ADDOMAIN=dc=thuis,dc=local
+         - EMAILDOMAIN=gieselaar.ddns.net
          - DOCKERNETMASK=171.18.0.0
          - DOCKERNETMASKLEN=24
          - NETMASK=10.56.57.0
@@ -34,20 +38,22 @@ services:
    dovecot:
       build: ./dovecot
       container_name: dovecot
-      image: tgiesela/dovecot:v0.2
+      image: tgiesela/dovecot:v0.3
       hostname: dovecot
       domainname: thuis.local
       restart: always
+      networks:
+         - mailnet
       depends_on:
-        - "postfix"
+         - "postfix"
       ports:
-        - "143:143"     # imap
-        - "993:993"     # imap-secure
-        - "110:110"     # pop3
-        - "995:995"     # pop3-secure
+         - 143:143     # imap
+         - 993:993     # imap-secure
+         - 110:110     # pop3
+         - 995:995     # pop3-secure
       expose:
-        - "24"          # lmtp
-        - "12345"       # sasl
+         - "24"        # lmtp
+         - 12345:12345 # sasl
       environment:
          - TZ=Europe/Amsterdam
          - DOMAIN=thuis.local
@@ -66,19 +72,27 @@ services:
    fetchmail:
       build: ./fetchmail
       container_name: fetchmail
-      image: tgiesela/fetchmail:v0.2
+      image: tgiesela/fetchmail:v0.3
       hostname: fetchmail
       domainname: thuis.local
       restart: always
+      networks:
+         - mailnet
       depends_on:
-        - "postfix"
+         - "postfix"
       environment:
          - TZ=Europe/Amsterdam
 
 networks:
-    default:
-        external:
-            name: tginet
+    mailnet:
+         name: mailnet
+         driver: bridge
+         enable_ipv6: false
+         ipam:
+            driver: default
+            config:
+               - subnet: 171.18.0.0/16
+                 gateway: 171.18.0.1
 
 #volumes:
 #    maildata:/mnt/media
