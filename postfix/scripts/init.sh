@@ -2,6 +2,7 @@
 
 #set -e
 
+HOSTNAME=$(hostname)
 CERTFOLDER=/etc/postfix/certs
 CACERT=${CERTFOLDER}/ssl-cert-snakeoil.pem
 PRIVATEKEY=${CERTFOLDER}/mail.key
@@ -29,15 +30,17 @@ generateCertificate() {
 updatefile() {
     sed -i "s/<domain>/$DOMAIN/g" $@
     sed -i "s/<emaildomain>/$EMAILDOMAIN/g" $@
-    sed -i "s/<addomain>/$ADDOMAIN/g" $@
+    if [ ! -z $ADDOMAIN ]; then
+        sed -i "s/<addomain>/$ADDOMAIN/g" $@
+        sed -i "s@<secret>@$ADPASSWORD@g" $@
+    fi
     sed -i "s/<hostname>/$HOSTNAME/g" $@
     sed -i "s/<dockernetmask>/$DOCKERNETMASK\/$DOCKERNETMASKLEN/g" $@
     sed -i "s/<netmask>/$NETMASK\/$NETMASKLEN/g" $@
     sed -i "s@<cacert>@$CACERT@g" $@
     sed -i "s@<publiccert>@$PUBLICCERT@g" $@
     sed -i "s@<privatekey>@$PRIVATEKEY@g" $@
-    sed -i "s@<domaincontroller>@$HOSTNAME.$DOMAIN@g" $@
-    sed -i "s@<secret>@$ADPASSWORD@g" $@
+    sed -i "s@<domaincontroller>@$ADCONTROLLER@g" $@
 }
 
 appSetup () {
@@ -51,11 +54,15 @@ appSetup () {
 
     cd /etc/postfix/
 
+    if [ -z $ADCONTROLLER ] ; then
+        ADCONTROLLER=$HOSTNAME.$DOMAIN
+    fi
 
     updatefile main.cf
     updatefile ldap_virtual_aliases.cf
     updatefile ldap_virtual_recipients.cf
     updatefile virtual_domains
+    updatefile virtual_recipients.cf
 
 #   configure relay
 
@@ -73,8 +80,13 @@ appSetup () {
     postconf -e smtpd_tls_security_level=may
     postconf -e virtual_transport=lmtp:inet:dovecot
     postconf -e virtual_mailbox_domains=hash:/etc/postfix/virtual_domains
-    postconf -e virtual_mailbox_maps=proxy:ldap:/etc/postfix/ldap_virtual_recipients.cf
-    postconf -e virtual_alias_maps=proxy:ldap:/etc/postfix/ldap_virtual_aliases.cf
+    if [ "${LDAP_YESNO}" = "y" ]; then
+        postconf -e virtual_mailbox_maps=proxy:ldap:/etc/postfix/ldap_virtual_recipients.cf
+        postconf -e virtual_alias_maps=proxy:ldap:/etc/postfix/ldap_virtual_aliases.cf
+    else
+        postconf -e virtual_mailbox_maps=hash:/etc/postfix/virtual_recipients.cf
+	postmap /etc/postfix/virtual_recipients.cf
+    fi
 
 #   configure certificates (Letsencrypt) or generate self-signed cert
 
@@ -90,7 +102,7 @@ appSetup () {
 
 #   miscelaneous
 
-    postconf -e mydestination=$myhostname,localhost,localhost.$mydomain
+    postconf -e mydestination=\$myhostname,localhost,localhost.\$mydomain
     postconf -e message_size_limit=20480000
     postconf -e disable_vrfy_command=yes
 

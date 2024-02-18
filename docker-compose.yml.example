@@ -1,11 +1,20 @@
-version: '2'
+version: '3.4'
+
+x-logging:
+    &default-logging
+    driver: "json-file"
+    options:
+        max-size: "10m"
+        max-file: "3"
+
+
 services:
    postfix:
       build: ./postfix
       container_name: postfix
-      image: tgiesela/postfix:v0.3
+      image: tgiesela/postfix:v0.4
       hostname: postfix
-      domainname: thuis.local
+      domainname: ${EMAILDOMAIN}
       restart: always
       networks:
          - mailnet
@@ -17,30 +26,32 @@ services:
          - "10025"   # smtp-for-amavis
       environment:
          - TZ=Europe/Amsterdam
-         - DOMAIN=thuis.local
-         - ADDOMAIN=dc=thuis,dc=local
+         - LDAP_YESNO=${LDAP_YESNO}
+         - DOMAIN=${EMAILDOMAIN}
+         - ADDOMAIN=${ADDOMAIN}
+         - ADCONTROLLER=${ADCONTROLLER}
          - EMAILDOMAIN=<yourdomain>
-         - DOCKERNETMASK=171.18.0.0
-         - DOCKERNETMASKLEN=24
-         - NETMASK=10.56.57.0
+         - DOCKERNETMASK=172.22.0.0
+         - DOCKERNETMASKLEN=16
+         - NETMASK=<your local network id used with netmask: e.g. 192.168.0.0>
          - NETMASKLEN=24
-         - HOSTNAME=thuisdc
          - ADPASSWORD=<password for postfix to access AD>
-         - LOCALNETWORK=171.18.0.0/24
-         - OTHERNERWORK=10.56.57.0/24
+         - LOCALNETWORK=172.22.0.0/16
          - RELAYHOST=smtp.gmail.com 
          - RELAYUSER=<youremail@gmail.com> 
          - RELAYUSERPASSWORD="password for relayuser" 
          - CERTIFICATESUBJECT=/C=<Country>/ST=<state>/L=<City>/O=<name>/CN=<canonical name
       volumes:
          - /docker/data/certificates/:/certificates/
+      logging: *default-logging
 
    dovecot:
-      build: ./dovecot
+      build: 
+         context: ./dovecot
       container_name: dovecot
-      image: tgiesela/dovecot:v0.3
+      image: tgiesela/dovecot:v0.4
       hostname: dovecot
-      domainname: thuis.local
+      domainname: ${EMAILDOMAIN}
       restart: always
       networks:
          - mailnet
@@ -56,25 +67,29 @@ services:
          - 12345:12345 # sasl
       environment:
          - TZ=Europe/Amsterdam
-         - DOMAIN=thuis.local
-         - ADDOMAIN=dc=thuis,dc=local
+         - LDAP_YESNO=${LDAP_YESNO}
+         - DOMAIN=${EMAILDOMAIN}
+         - ADDOMAIN=${ADDOMAIN}
+         - ADCONTROLLER=${ADCONTROLLER}
          - ADPASSWORD=<password for postfix to access AD>
-         - DOCKERNETMASK=171.18.0.0
-         - DOCKERNETMASKLEN=24
-         - NETMASK=10.56.57.0
+         - DOCKERNETMASK=172.22.0.0
+         - DOCKERNETMASKLEN=16
+         - NETMASK=<your local network id used with netmask: e.g. 192.168.0.0>
          - NETMASKLEN=24
-         - HOSTNAME=thuisdc 
+         - MAILUSER=${MAILUSER}
+         - MAILPASSWORD=${MAILUSERPASSWORD}
          - CERTIFICATESUBJECT=/C=<Country>/ST=<state>/L=<City>/O=<name>/CN=<canonical name
       volumes:
         - /mnt/mail/:/var/mail/
         - /docker/data/certificates/:/certificates/
+      logging: *default-logging
 
    fetchmail:
       build: ./fetchmail
       container_name: fetchmail
-      image: tgiesela/fetchmail:v0.3
+      image: tgiesela/fetchmail:v0.4
       hostname: fetchmail
-      domainname: thuis.local
+      domainname: ${EMAILDOMAIN}
       restart: always
       networks:
          - mailnet
@@ -82,6 +97,7 @@ services:
          - "postfix"
       environment:
          - TZ=Europe/Amsterdam
+      logging: *default-logging
 
 networks:
     mailnet:
@@ -91,8 +107,8 @@ networks:
          ipam:
             driver: default
             config:
-               - subnet: 171.18.0.0/16
-                 gateway: 171.18.0.1
+               - subnet: 172.22.0.0/16
+                 gateway: 172.22.0.1
 
 #volumes:
 #    maildata:/mnt/media

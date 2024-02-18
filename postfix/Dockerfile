@@ -18,6 +18,7 @@ ADD config/main.cf /etc/postfix/
 ADD config/master.cf /etc/postfix/
 ADD config/ldap_virtual_recipients.cf /etc/postfix/
 ADD config/ldap_virtual_aliases.cf /etc/postfix/
+ADD config/virtual_recipients.cf /etc/postfix/
 ADD config/virtual_domains /etc/postfix/
 
 # Container scripts
