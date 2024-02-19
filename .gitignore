@@ -2,3 +2,4 @@
 fetchmail/config/.netrc
 fetchmail/config/fetchmailrc
 docker-compose.yml
+.env
