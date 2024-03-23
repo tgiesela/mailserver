@@ -16,7 +16,7 @@ appSetup () {
 
 appStart () {
      appSetup
-     /usr/bin/fetchmail -v -N -f /etc/fetchmailrc
+     exec /usr/bin/fetchmail -v -N -f /etc/fetchmailrc
 }
 
 appHelp () {

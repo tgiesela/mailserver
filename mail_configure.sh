@@ -1,5 +1,5 @@
 #!/bin/bash
-DEFAULT_DATAFOLDER=/dockerdata
+DEFAULT_DATAFOLDER=/sharedfolders/userdata/tonny/dockerdata
 DEFAULT_MAILUSER=dovecotuser
 DEFAULT_MAILUSERPASSWORD=dovecotuser
 INETDEV=$(ip route get 8.8.8.8 | grep -oP 'dev \K[^ ]+')
@@ -55,6 +55,6 @@ if [ -z $DATAFOLDER ]; then
 fi
 
 set > .env
-docker-compose build 
-docker-compose up -d
+docker compose build 
+docker compose up -d
 

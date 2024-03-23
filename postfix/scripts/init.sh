@@ -119,7 +119,17 @@ appSetup () {
 appStart () {
     [ -f /etc/postfix/.alreadysetup ] && echo "Skipping setup..." || appSetup
 
-    /usr/sbin/postfix start-fg
+    trap "appStop SIGINT" SIGINT
+    trap "appStop SIGTERM" SIGTERM
+    /usr/sbin/postfix start-fg &
+    wait $!
+    echo "Process stopped"
+}
+
+appStop () {
+    echo "Signal $1 caught"
+    /usr/sbin/postfix stop
+    echo "Postfix stop command complete"
 }
 
 appHelp () {

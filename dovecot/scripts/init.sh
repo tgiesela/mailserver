@@ -77,7 +77,17 @@ EOF
 appStart () {
     [ -f /etc/dovecot/.alreadysetup ] && echo "Skipping setup..." || appSetup
 
-    /usr/sbin/dovecot -F
+    trap "appStop" SIGTERM
+    trap "appStop" SIGINT
+    set +e
+    exec /usr/sbin/dovecot -F &
+    wait $!
+    echo "Wait completed"
+}
+appStop () {
+    echo "TRAP HANDLER" active
+    echo "Stopping"
+    /usr/sbin/dovecot stop
 }
 
 appHelp () {
@@ -112,5 +122,5 @@ case "$1" in
 		fi
 		;;
 esac
-
+echo "Exiting now"
 exit 0
