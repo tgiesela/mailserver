@@ -110,7 +110,7 @@ appSetup () {
 #    sed -i "s/MECHANISMS=.*/MECHANISMS=\"ldap\"/g" /etc/default/saslauthd
 
     postmap hash:/etc/postfix/virtual_domains
-    postconf compatibility_level=2
+    postconf compatibility_level=3.6
 
     touch /etc/postfix/.alreadysetup
 
