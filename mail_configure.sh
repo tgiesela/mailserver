@@ -55,6 +55,14 @@ if [ -z $DATAFOLDER ]; then
 fi
 
 set > .env
+echo '# settings mailserver' > vars
+echo export DATAFOLDER=${DATAFOLDER} >> vars
+echo export ADCONTROLLER=${ADCONTROLLER} >> vars
+echo export ADDOMAIN=${ADDOMAIN} >> vars
+echo export EMAILDOMAIN=${EMAILDOMAIN} >> vars
+echo export MAILUSER=${MAILUSER} >> vars
+echo export MAILUSERPASSWORD=${MAILUSERPASSWORD} >> vars
+echo export LDAP_YESNO=${LDAP_YESNO} >> vars
 docker compose build 
 docker compose up -d
 

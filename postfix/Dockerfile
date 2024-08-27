@@ -3,7 +3,7 @@ MAINTAINER Tonny Gieselaar <tgiesela@gmail.com>
 
 ENV DEBIAN_FRONTEND="noninteractive" \
     TERM="xterm" \
-    APTLIST="cron wget jq locales nano net-tools apt-utils wget procps dnsutils iputils-ping" \
+    APTLIST="cron wget jq locales nano net-tools apt-utils wget procps dnsutils iputils-ping iproute2" \
     UPDATE="apt update && apt -y upgrade" \
     CLEANUP="apt -y autoremove && apt -y clean && rm -rf /var/lib/apt/lists"
 

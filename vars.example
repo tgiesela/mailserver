@@ -1,0 +1,21 @@
+# settings mailserver
+export DATAFOLDER=/folder/to/store/docker/config
+export ADCONTROLLER=<ip address of AD controller if applicable?
+export ADDOMAIN=<yourdomain as dc=example,dc=com>
+export EMAILDOMAIN=<yourdomain as example.com>
+export EXTERNALEMAILDOMAIN=<your external domain name>
+export CERTIFICATESUBJECT=/C=NL/ST=<province>/L=<city>/O=<name>/CN=${EXTERNALDOMAIN}
+export MAILUSER=dovecotuser         # choose a name you like
+export MAILUSERPASSWORD=dovecotuser # choose whatever you want
+export LDAP_YESNO=n
+export RELAYHOST=<relay host, e.g. smtp.gmail.com>
+export RELAYUSER=<email at relay host>
+export RELAYUSERPASSWORD=<password for email at relay host> 
+export LOCALNETWORK=192.168.1.0 # or similar
+export LOCALNETWORKMASKLEN=24
+export ADPASSWORD=<password for aduser>
+export LOCALNETWORK=<docker network in form ip/len or ${DOCKERNETWORK} if using vpn>
+export DOCKERNETWORKIP=<docker network ip part or ${DOCKERNETWORKIP} if using vpn>
+export DOCKERNETWORKMASKLEN=<docker network ipmask-len or ${DOCKERNETWORKMASKLEN} if using vpn>
+export LOCALDNS=<ip of local dns server>
+export MAILFOLDER=<folder to store email>
