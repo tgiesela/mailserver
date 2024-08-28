@@ -1,5 +1,5 @@
 #!/bin/bash
-DEFAULT_DATAFOLDER=/sharedfolders/userdata/tonny/dockerdata
+DEFAULT_DATAFOLDER=/folder/to/store/docker/config
 DEFAULT_MAILUSER=dovecotuser
 DEFAULT_MAILUSERPASSWORD=dovecotuser
 INETDEV=$(ip route get 8.8.8.8 | grep -oP 'dev \K[^ ]+')
@@ -54,15 +54,30 @@ if [ -z $DATAFOLDER ]; then
     DATAFOLDER=${DEFAULT_DATAFOLDER}
 fi
 
-set > .env
 echo '# settings mailserver' > vars
 echo export DATAFOLDER=${DATAFOLDER} >> vars
 echo export ADCONTROLLER=${ADCONTROLLER} >> vars
 echo export ADDOMAIN=${ADDOMAIN} >> vars
+echo export MAILUSERPASSWORD=${MAILUSERPASSWORD} >> vars
+echo export EXTERNALEMAILDOMAIN=your.external.domain >> vars
+# Update following as required
+COUNTRY=NL
+PROVINCE=N-H
+CITY=Amsterdam
+ORG=Organization
+echo export CERTIFICATESUBJECT=/C=${COUNTRY}/ST=${PROVINCE}/L=${CITY}/O=${ORG}/CN=${EXTERNALEMAILDOMAIN} >> vars
 echo export EMAILDOMAIN=${EMAILDOMAIN} >> vars
 echo export MAILUSER=${MAILUSER} >> vars
-echo export MAILUSERPASSWORD=${MAILUSERPASSWORD} >> vars
 echo export LDAP_YESNO=${LDAP_YESNO} >> vars
-docker compose build 
-docker compose up -d
-
+echo export RELAYHOST='<relay host, e.g. smtp.gmail.com>' >> vars
+echo export RELAYUSER='<email at relay host>' >> vars
+echo export RELAYUSERPASSWORD='<password for email at relay host>' >> vars
+echo export LOCALNETWORK='192.168.1.0' >> vars
+echo export LOCALNETWORKMASKLEN=24  >> vars
+echo export ADPASSWORD='<password for aduser>' >> vars
+echo export LOCALNETWORK='<docker network in form ip/len or ${DOCKERNETWORK} if using vpn>' >> vars
+echo export DOCKERNETWORKIP='<docker network ip part or ${DOCKERNETWORKIP} if using vpn>' >> vars
+echo export DOCKERNETWORKMASKLEN='<docker network ipmask-len or ${DOCKERNETWORKMASKLEN} if using vpn>' >> vars
+echo export LOCALDNS='<ip of local dns server>' >> vars
+echo export MAILFOLDER='<folder to store email>' >> vars
+echo -e "\nPlease update the generated 'vars' file\n"

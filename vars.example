@@ -1,6 +1,6 @@
 # settings mailserver
 export DATAFOLDER=/folder/to/store/docker/config
-export ADCONTROLLER=<ip address of AD controller if applicable?
+export ADCONTROLLER=<ip address of AD controller if applicable>
 export ADDOMAIN=<yourdomain as dc=example,dc=com>
 export EMAILDOMAIN=<yourdomain as example.com>
 export EXTERNALEMAILDOMAIN=<your external domain name>
