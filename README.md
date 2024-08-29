@@ -10,6 +10,10 @@ in the docker-compose.yml:
 
 ` - ADPASSWORD=<password for postfix to access AD>`
 
+Create a docker network, for example:
+
+` docker network create --subnet 172.22.0.0/16 --gateway 172.22.0.50 --ipv6 mailnet`
+
 Populate the fetchmail/config/fetchmailrc file in the config folder with the accounts 
 you want to use to retrieve mail from.
 
