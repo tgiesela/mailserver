@@ -1,0 +1,115 @@
+x-logging:
+    &default-logging
+    driver: "json-file"
+    options:
+        max-size: "10m"
+        max-file: "3"
+
+services:
+   postfix:
+      build: ./postfix
+      container_name: postfix
+      image: tgiesela/postfix:v0.4
+      hostname: postfix
+      domainname: ${EMAILDOMAIN}
+      restart: always
+      networks:
+         - mailnet
+      depends_on: [vpn]
+      ports: 
+         - "25:25"   # smtp
+         - "587:587" # smtp-auth starttls
+         - "465:465" # smtp-auth tls
+      expose:
+         - "10025"   # smtp-for-amavis
+      environment:
+         - TZ=Europe/Amsterdam
+         - LDAP_YESNO=${LDAP_YESNO}
+         - DOMAIN=${EMAILDOMAIN}
+         - ADDOMAIN=${ADDOMAIN}
+         - ADCONTROLLER=${ADCONTROLLER}
+         - EMAILDOMAIN=${EXTERNALEMAILDOMAIN}
+         - DOCKERNETMASK=${DOCKERNETWORKIP}
+         - DOCKERNETMASKLEN=${DOCKERNETWORKMASKLEN}
+         - NETMASK=${LOCALNETWORK}
+         - NETMASKLEN=${LOCALNETWORKMASKLEN}
+         - ADPASSWORD=${ADPASSWORD}
+         - LOCALNETWORK=${LOCALNETWORK}
+         - RELAYHOST=${RELAYHOST}
+         - RELAYUSER=${RELAYUSER}
+         - RELAYUSERPASSWORD=${RELAYUSERPASSWORD}
+         - CERTIFICATESUBJECT=${CERTIFICATESUBJECT}
+      volumes:
+         - ${DATAFOLDER}/certificates/:/certificates/
+      logging: *default-logging
+      labels:
+        - "com.tgiesela.vpn.accessible=true"
+        - "com.tgiesela.vpn.vpnport=25;587;465"
+        - "com.tgiesela.vpn.containerport=25;587;465"
+
+   dovecot:
+      build: 
+         context: ./dovecot
+      container_name: dovecot
+      image: tgiesela/dovecot:v0.4
+      hostname: dovecot
+      domainname: ${EMAILDOMAIN}
+      restart: always
+      networks: 
+         - mailnet
+      dns:
+         - ${LOCALDNS}
+      dns_search:
+         - ${ADDOMAIN}
+      depends_on: [vpn,postfix]
+      ports:
+         - 143:143     # imap
+         - 993:993     # imap-secure
+         - 110:110     # pop3
+         - 995:995     # pop3-secure
+         - 12345:12345 # sasl
+      expose:
+         - "24"        # lmtp
+      environment:
+         - TZ=Europe/Amsterdam
+         - LDAP_YESNO=${LDAP_YESNO}
+         - DOMAIN=${EMAILDOMAIN}
+         - ADDOMAIN=${ADDOMAIN}
+         - ADCONTROLLER=${ADCONTROLLER}
+         - ADPASSWORD=${ADPASSWORD}
+         - DOCKERNETMASK=${DOCKERNETWORKIP}
+         - DOCKERNETMASKLEN=${DOCKERNETWORKMASKLEN}
+         - NETMASK=${LOCALNETWORK}
+         - NETMASKLEN=${LOCALNETWORKMASKLEN}
+         - MAILUSER=${MAILUSER}
+         - MAILPASSWORD=${MAILUSERPASSWORD}
+         - CERTIFICATESUBJECT=${CERTIFICATESUBJECT}
+      volumes:
+        - ${MAILFOLDER}:/var/mail/
+        - ${DATAFOLDER}/certificates/:/certificates/
+      logging: *default-logging
+      labels:
+        - "com.tgiesela.vpn.accessible=true"
+        - "com.tgiesela.vpn.vpnport=143;993;110;995;12345"
+        - "com.tgiesela.vpn.containerport=143;993;110;995;12345"
+
+   fetchmail:
+      build: ./fetchmail
+      container_name: fetchmail
+      image: tgiesela/fetchmail:v0.4
+      hostname: fetchmail
+      domainname: ${EMAILDOMAIN}
+      restart: always
+      networks: 
+         - mailnet
+      depends_on: [vpn,postfix]
+      environment:
+         - TZ=Europe/Amsterdam
+      logging: *default-logging
+      labels:
+        - "com.tgiesela.vpn.hiddenip=true"
+
+networks:
+  mailnet:
+    name: mailnet
+    external: true
