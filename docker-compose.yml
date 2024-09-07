@@ -9,10 +9,10 @@ services:
    postfix:
       build: ./postfix
       container_name: postfix
-      image: tgiesela/postfix:v0.4
+      image: tgiesela/postfix:v0.5
       hostname: postfix
       domainname: ${EMAILDOMAIN}
-      restart: always
+      restart: on-failure:5
       networks:
          - mailnet
       dns: [ $DNSIP ]
@@ -52,10 +52,10 @@ services:
       build: 
          context: ./dovecot
       container_name: dovecot
-      image: tgiesela/dovecot:v0.4
+      image: tgiesela/dovecot:v0.5
       hostname: dovecot
       domainname: ${EMAILDOMAIN}
-      restart: always
+      restart: on-failure:5
       networks: 
          - mailnet
       dns: [ $DNSIP ]
@@ -96,10 +96,10 @@ services:
    fetchmail:
       build: ./fetchmail
       container_name: fetchmail
-      image: tgiesela/fetchmail:v0.4
+      image: tgiesela/fetchmail:v0.5
       hostname: fetchmail
       domainname: ${EMAILDOMAIN}
-      restart: always
+      restart: on-failure:5
       networks: 
          - mailnet
       dns: [ $DNSIP ]

@@ -2,3 +2,5 @@
 fetchmail/config/.netrc
 fetchmail/config/fetchmailrc
 vars
+.env
+renew.log

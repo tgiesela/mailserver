@@ -1,5 +1,4 @@
-FROM debian:latest
-MAINTAINER Tonny Gieselaar <tgiesela@gmail.com>
+FROM debian:12.7
 
 ENV DEBIAN_FRONTEND="noninteractive" \
     TERM="xterm" \
