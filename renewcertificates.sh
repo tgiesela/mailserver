@@ -2,7 +2,8 @@
 
 # To get the first certificate: 
 #	certbot certonly -d ${EXTERNALEMAILDOMAIN}
-source vars
+CURRFOLDER=$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+source $CURRFOLDER/vars
 CERTFOLDER=/etc/letsencrypt/live/${EXTERNALEMAILDOMAIN}
 TARGETFOLDER=${DATAFOLDER}/certificates
 ORIGDATE=`(stat -L -c %Y $TARGETFOLDER/cert.pem)`
