@@ -66,7 +66,7 @@ PROVINCE=N-H
 CITY=Amsterdam
 ORG=Organization
 {
-    echo export CERTIFICATESUBJECT=/C=${COUNTRY}/ST=${PROVINCE}/L=${CITY}/O=${ORG}/CN=${EXTERNALEMAILDOMAIN} ;
+    echo export CERTIFICATESUBJECT=/C=${COUNTRY}/ST=${PROVINCE}/L=${CITY}/O=${ORG}/CN="${EXTERNALEMAILDOMAIN}" ;
     echo export EMAILDOMAIN="${EMAILDOMAIN}" ;
     echo export MAILUSER="${MAILUSER}" ;
     echo export LDAP_YESNO="${LDAP_YESNO}" ;
